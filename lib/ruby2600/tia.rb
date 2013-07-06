@@ -21,7 +21,12 @@ module Ruby2600
       @cpu_credits = 0
       @bl_counter = TIACounter.new
       @bl_counter.on_change { |value| bl_counter_increased(value) }
+      @m0_counter = TIACounter.new
+      @m0_counter.on_change { |value| m0_counter_increased(value) }
+      @p0_counter = TIACounter.new
+      @p0_counter.on_change { |value| p0_counter_increased(value) }
       @bl_pixels_to_draw = 0
+      @m0_pixels_to_draw = 0
     end
 
     def [](position)
@@ -32,6 +37,12 @@ module Ruby2600
       case position
       when RESBL
         @bl_counter.reset
+      when RESM0
+        @m0_counter.reset
+      when RESP0
+        @p0_counter.reset
+      when HMOVE
+        @bl_counter.move @HMBL
       else
         @reg[position] = value
       end
@@ -66,10 +77,12 @@ module Ruby2600
       HORIZONTAL_BLANK_CLK_COUNT.upto TOTAL_SCANLINE_CLK_COUNT - 1 do |color_clock|
         sync_cpu_with color_clock
         unless vertical_blank?
-          @scanline[@pixel] = bl_pixel || pf_pixel || bg_pixel
+          @scanline[@pixel] = p0_pixel || m0_pixel || bl_pixel || pf_pixel || bg_pixel
         end
         @pixel += 1
         @bl_counter.tick
+        @m0_counter.tick
+        @p0_counter.tick
       end
       @scanline
     end
@@ -81,8 +94,8 @@ module Ruby2600
     # clock, and "use" this credit when we have any of it
 
     def sync_cpu_with(color_clock)
-      riot.pulse if color_clock % 3 == 0
       return if @reg[WSYNC]
+      riot.pulse if color_clock % 3 == 0
       @cpu_credits += 1 if color_clock % 3 == 0
       @cpu_credits -= @cpu.step while @cpu_credits > 0
     end
@@ -129,6 +142,45 @@ module Ruby2600
 
     def score_mode?
       @reg[CTRLPF][1] == 1
+    end
+
+    # Players
+
+    def p0_pixel
+      return nil unless @p0_current_pixel
+      pixel = @p0_current_pixel
+      @p0_current_pixel -= 1
+      @p0_current_pixel = nil if @p0_current_pixel < -1
+      @reg[COLUP0] unless @reg[GRP0][pixel].zero?
+    end
+
+    def p0_counter_increased(value)
+      # FIXME gotta shift this
+      if value == 0
+        @p0_current_pixel = 7
+      elsif value == 1
+        @p0_current_pixel = 3
+      else
+        @p0_current_pixel = nil
+      end
+    end
+
+    # Missiles
+
+    def m0_pixel
+     return nil unless @reg[ENAM0][1]==1 && @m0_pixels_to_draw > 0
+     @m0_pixels_to_draw -= 1
+     @reg[COLUP0]
+    end
+
+    def m0_size
+      2 ** (2 * @reg[NUSIZ0][5] + @reg[NUSIZ1][4])
+    end
+
+    def m0_counter_increased(value)
+      if value == 0
+        @ml_pixels_to_draw = 8
+      end
     end
 
     # Ball
