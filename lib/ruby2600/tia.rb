@@ -43,6 +43,8 @@ module Ruby2600
         @p0_counter.reset
       when HMOVE
         @bl_counter.move @reg[HMBL]
+        @m0_counter.move @reg[HMM0]
+        @p0_counter.move @reg[HMP0]
       else
         @reg[position] = value
       end
@@ -156,9 +158,9 @@ module Ruby2600
 
     def p0_counter_increased(value)
       # FIXME gotta shift this
-      if value == 0
+      if value == 0 || value == 4 || value == 8
         @p0_current_pixel = 7
-      elsif value == 1
+      elsif value == 1 || value == 5 || value == 8
         @p0_current_pixel = 3
       else
         @p0_current_pixel = nil
