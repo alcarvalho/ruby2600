@@ -3,31 +3,31 @@ module Ruby2600
     def initialize(tia)
       @tia = tia
       @counter = TIACounter.new
-      @bit_queue = 0
-      @counter.on_change { |value| @bit_queue = reverse(@tia[GRP0]) << 1 if value == 0 }
+      @counter.on_change { |value| @grp_bit = -5 if value == 39 }
     end
 
     def pixel
+      update_pixel_bit
       @counter.tick
-      fetch_pixel
+      @tia[COLUP0] if @pixel_bit == 1
     end
 
     def strobe
-      # Counter should reset 5 CLKs (pixels) from now
-      @counter.value = 39
-    end
-
-    def fetch_pixel
-      puts "Q: #{@bit_queue}"
-      bit = @bit_queue[0]
-      @bit_queue >>= 1
-      @tia[COLUP0] if bit == 1
+      @counter.reset
     end
 
     private
 
-    def reverse(byte)
-      (0..7).reduce(0) { |sum, bit| sum + byte[bit] * 2 ** (7 - bit) }
+    def update_pixel_bit
+      puts "probing for output with counter=#{@counter.value} and grp_bit=#{@grp_bit}"
+      if @grp_bit
+        puts "GRP BIT #{7 - @grp_bit} output! value = #{@tia[GRP0][7-@grp_bit]}" if (0..7).include?(@grp_bit)
+        @pixel_bit = @tia[GRP0][7 - @grp_bit] if (0..7).include?(@grp_bit)
+        @grp_bit += 1 # we'll change this for REFPn
+        @grp_bit = nil if @grp_bit > 7
+      else
+        @pixel_bit = nil
+      end
     end
   end
 end
