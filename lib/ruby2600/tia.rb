@@ -94,8 +94,8 @@ module Ruby2600
     # clock, and "use" this credit when we have any of it
 
     def sync_cpu_with(color_clock)
-      return if @reg[WSYNC]
       riot.pulse if color_clock % 3 == 0
+      return if @reg[WSYNC]
       @cpu_credits += 1 if color_clock % 3 == 0
       @cpu_credits -= @cpu.step while @cpu_credits > 0
     end
