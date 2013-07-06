@@ -42,7 +42,7 @@ module Ruby2600
       when RESP0
         @p0_counter.reset
       when HMOVE
-        @bl_counter.move @HMBL
+        @bl_counter.move @reg[HMBL]
       else
         @reg[position] = value
       end

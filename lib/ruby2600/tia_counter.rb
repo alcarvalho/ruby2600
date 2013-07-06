@@ -33,7 +33,6 @@ module Ruby2600
     end
 
     def move(tia_motion_value)
-      return unless tia_motion_value # FIXME should we care here?
       internal_value_add nibble_to_decimal(tia_motion_value)
     end
 
