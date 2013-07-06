@@ -1,25 +1,29 @@
 module Ruby2600
-  # Movable objects are implemented internally on TIA using counters that go
-  # from 0 to 39, but only increment after 4 color clocks (to match the 160
-  # pixels of a scanline)
-  # See http://www.atarihq.com/danb/files/TIA_HW_Notes.txt
-
-  #FIXME too many magic numbers here (160, 4); review test coverage due to hmove spike
+  # Movable objects on TIA use counters that go from 0 to 39, but run at 1/4
+  # of the TIA speed. See http://www.atarihq.com/danb/files/TIA_HW_Notes.txt
+  # FIXME review test coverage due to hmove spike
   class TIACounter
+    PERIOD = 40
+    CLKS_PER_COUNT = 4
+    MAX_VALUE = PERIOD * CLKS_PER_COUNT - 1
+
     def initialize
-      @internal_value = rand(160)
+      @internal_value = rand(MAX_VALUE)
     end
 
     def reset
-      @internal_value = 35 * 4
+      # FIXME 35 * TIA_CLKS_PER_COUNT works for Pitfall ball; may be an
+      # artificat of lack other implementations
+      @internal_value = 0
     end
 
     def value
-      @internal_value / 4
+      @internal_value / CLKS_PER_COUNT
     end
 
+    # FIXME this is for tests only (to avoid tests peeking into internals), should stay?
     def value=(x)
-      @internal_value = x * 4
+      @internal_value = x * CLKS_PER_COUNT
     end
 
     def tick
@@ -41,7 +45,7 @@ module Ruby2600
 
     def internal_value_add(value)
       @internal_value += value
-      @internal_value -= 160 while @internal_value > 159
+      @internal_value -= 160 while @internal_value >= MAX_VALUE
       @internal_value += 160 while @internal_value < 0
     end
 
