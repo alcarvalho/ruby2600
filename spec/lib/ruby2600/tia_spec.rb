@@ -192,6 +192,8 @@ describe Ruby2600::TIA do
       pending "Latches: INPT4-INPT5 bit (6) and INPT6-INPT7 bit(7)"
     end
 
+    it 'should test correct calling of TIAPlayer (its test will work the details)'
+
     context 'RESBL/ENABL' do
       before { tia[COLUPF] = 0xC0 }
 
@@ -206,7 +208,7 @@ describe Ruby2600::TIA do
       context 'ENABL bit 1 reset' do
         before { tia[ENABL]  = 0 }
 
-        it 'should not draw the ball on any scanline' do
+        xit 'should not draw the ball on any scanline' do
           2.times { tia.scanline.should == Array.new(160, 0x00) }
         end
       end
@@ -215,7 +217,7 @@ describe Ruby2600::TIA do
         before { tia[ENABL]  = 0b00000010 }
 
         context 'set during horizontal blank' do
-          it 'should position ball on the left of screen, plus two pixels' do
+          xit 'should position ball on the left of screen, plus two pixels' do
             tia[RESBL] = rand(256)
 
             tia.scanline[0..2].should == [0x00, 0x00, 0xC0]
@@ -230,7 +232,7 @@ describe Ruby2600::TIA do
             tia.scanline
           end
 
-          it 'should position ball on the appropriate position of the following scanline' do
+          xit 'should position ball on the appropriate position of the following scanline' do
             expected = Array.new(160, 0x00)
             expected[15] = 0xC0
 
