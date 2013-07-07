@@ -6,7 +6,7 @@ describe Ruby2600::TIAPlayer do
   subject(:player) { Ruby2600::TIAPlayer.new(tia) }
 
   def player_pixels(n)
-    (1..n).map { |i| puts "will test grp bit #{8-i}"; player.pixel }
+    (1..n).map { player.pixel }
   end
 
   describe 'pixel' do
@@ -26,7 +26,7 @@ describe Ruby2600::TIAPlayer do
 
       it 'after a strobe, it should output the player after a full scanline (160pixels) + 1-bit delay' do
         # Player is drawn on next scanline (160 pixels), delayed by 1 pixel
-        161.times { player.pixel.should be_nil }
+        161.times { player.pixel }
         player_pixels(8).should == [nil, 0xEE, nil, 0xEE, nil, 0xEE, nil, 0xEE]
       end
 
