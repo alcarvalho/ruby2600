@@ -12,7 +12,7 @@ module Ruby2600
     end
 
     def reset
-      # FIXME 35 * TIA_CLKS_PER_COUNT works for Pitfall ball; may be an
+      # FIXME 35 * CLKS_PER_COUNT works for Pitfall ball; may be an
       # artifact of lack other implementations
       @internal_value = 0
     end
